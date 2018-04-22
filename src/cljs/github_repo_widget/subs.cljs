@@ -18,3 +18,14 @@
  (fn [db]
    (get-in db [:loading :info])))
 
+
+(re-frame/reg-sub
+ ::repo-readme
+ (fn [db]
+   (:repo-readme db)))
+
+
+(re-frame/reg-sub
+ ::repo-readme-loading?
+ (fn [db]
+   (get-in db [:loading :readme])))

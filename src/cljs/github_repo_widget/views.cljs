@@ -7,12 +7,13 @@
 
 
 (defn- readme-tab []
-  (let [loading? false
+  (let [loading? @(re-frame/subscribe [::subs/repo-readme-loading?])
+        readme   @(re-frame/subscribe [::subs/repo-readme])
         pane     (ui/component "Tab" "Pane")
         header   (ui/component "Header")]
 
     [:> pane {:loading loading?}
-     "README"]))
+     [:div {:dangerouslySetInnerHTML {:__html readme}}]]))
 
 
 (defn- stats-tab []
@@ -71,10 +72,9 @@
                   :default-value repo-name}]]
 
       [:> col {:width 4}
-       [:> button {:primary  true
-                   :fluid    true
-                   :submit   true
-                   :on-click on-submit}
+       [:> button {:primary true
+                   :fluid   true
+                   :submit  true}
         "Fetch"]]]]))
 
 

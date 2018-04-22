@@ -25,13 +25,22 @@
         base-uri (str "https://api.github.com/repos/" repo)]
 
     {:db         (-> db
-                     (assoc-in [:loading :info] true))
+                     (dissoc :repo-info :repo-readme)
+                     (assoc-in [:loading :info] true)
+                     (assoc-in [:loading :repo] true))
      :http-xhrio [{:method          :get
                    :uri             base-uri
                    :timeout         5000
                    :response-format (ajax/json-response-format {:keywords? true})
                    :on-success      [::info-loaded]
-                   :on-failure      [::info-failed]}]})))
+                   :on-failure      [::info-failed]}
+                  {:method          :get
+                   :uri             (str base-uri "/readme")
+                   :timeout         5000
+                   :headers         {:accept "application/vnd.github.v3.html+json"}
+                   :response-format (ajax/raw-response-format)
+                   :on-success      [::readme-loaded]
+                   :on-failure      [::readme-failed]}]})))
 
 
 (re-frame/reg-event-db
@@ -50,3 +59,21 @@
   (-> db
       (assoc-in [:errors :info] xhrio)
       (assoc-in [:loading :info] false))))
+
+
+(re-frame/reg-event-db
+ ::readme-loaded
+ (fn-traced
+  [db [_ repo-readme]]
+  (-> db
+      (assoc-in [:loading :readme] false)
+      (assoc :repo-readme repo-readme))))
+
+
+(re-frame/reg-event-db
+ ::readme-failed
+ (fn-traced
+  [db [_ xhrio]]
+  (-> db
+      (assoc-in [:errors :readme] xhrio)
+      (assoc-in [:loading :readme] false))))
